@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- 创建映射文件 -->
+<!-- mybatis中的映射文件：内部要定义sql映射 -->
+<!-- 1)映射文件的命名空间用于约束元素id的唯一性. 2)映射文件命名空间的格式最好是包结构形式 -->
+<mapper namespace="com.jt.sys.dao.SysLogDao">
+	<!-- 底层会封装为一个MappedStatement对象 -->
+
+	<insert id="insertObject">
+		insert into sys_logs
+		(username,operation,method,params,time,ip,createdTime)
+		values
+		(#{username},#{operation},#{method},#{params},#{time},#{ip},#{createdTime})
+	</insert>
+
+	<!-- 基于id执行删除操作 -->
+	<delete id="deleteObjects">
+		delete from sys_logs
+		where id in <!-- (1,2,3,4) -->
+		<foreach collection="ids" open="(" close=")" separator=","
+			item="id">
+			#{id}
+		</foreach>
+	</delete>
+
+
+	<!-- sql标签用于定义映射元素中的sql共性，其他元素用到此元素时， 可以include包含 -->
+	<sql id="queryWhereId">
+		<where>
+			<if test="username!=null and username!=''">
+				username like concat("%",#{username},"%")
+			</if>
+		</where>
+	</sql>
+
+	<select id="getRowCount" resultType="int">
+		select count(*)
+		from sys_logs
+		<include refid="queryWhereId"></include>
+	</select>
+
+	<select id="findPageObjects"
+		resultType="com.jt.sys.entity.SysLog">
+		select * from sys_logs
+		<include refid="queryWhereId"></include>
+		limit #{startIndex},#{pageSize}
+	</select>
+
+</mapper>
